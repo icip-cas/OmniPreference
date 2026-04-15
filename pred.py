@@ -66,8 +66,8 @@ if __name__ == "__main__":
     parser.add_argument("--input_pt", type=str, default='Qwen2.5-Omni-7B-ahabench-hidden_states.pt')
     parser.add_argument("--probe_dir", type=str, default='probe')
     parser.add_argument("--output_json", type=str, default='pred_results/ahabench/aha_all_layers_result.json')
-    parser.add_argument("--start_layer", type=int, default=1, help="Start layer") 
-    parser.add_argument("--end_layer", type=int, default=28, help="End layer")
+    parser.add_argument("--start_layer", type=int, default=1) 
+    parser.add_argument("--end_layer", type=int, default=28)
 
     args = parser.parse_args()
 
