@@ -43,7 +43,7 @@ Layer-wise modality preference probe accuracy for all evaluated OLLMs.
 Case study.
 </p>
 <div  align="center">    
-    <img src="./assets/3.1.png" width=80%/>
+    <img src="./assets/3.1.png" width=90%/>
 </div>
 
 
