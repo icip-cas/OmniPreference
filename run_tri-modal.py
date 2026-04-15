@@ -140,7 +140,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--data_json",
-        default= 'conflict_triplets_processed.json'
+        default= 'data/conflict_triplets_processed.json'
     )
     parser.add_argument(
         "--model_path",
