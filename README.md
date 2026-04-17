@@ -12,9 +12,9 @@
 
 -------------
 ### Evaluation Data
-'''
+```
 data/conflict_triplets_processed.json
-'''
+```
 ### Preference Evaluation
 
 <p align = "justify"> 
