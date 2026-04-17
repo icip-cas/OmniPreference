@@ -19,31 +19,17 @@
 ```
 data/conflict_triplets_processed.json
 ```
-📍 **Data**:
-<p align = "justify"> 
- MSR (%) results of all evaluated OLLMs on the tri-modal conflict dataset. 
-</p>
-<div  align="center">    
-    <img src="./assets/1.1.png" width=60%/>
-</div>
-
-
-### Preference Emerges
-<p align = "justify"> 
-Layer-wise modality preference probe accuracy for all evaluated OLLMs.
-</p>
-<div  align="center">    
-    <img src="./assets/2.1.png" width=60%/>
-</div>
-
-
-### Hallucination Detection
-<p align = "justify"> 
-Case study.
-</p>
-<div  align="center">    
-    <img src="./assets/3.1.png" width=90%/>
-</div>
+📍 **eval**:
+```
+eval/run_tri-modal.py
+```
+📍 **probe**:
+```
+probe/train.py 
+probe/.py
+probe/train.py
+probe/train.py
+```
 
 
 
