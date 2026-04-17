@@ -7,7 +7,6 @@
 
 
 
--------------
 ## 🎯 What this paper does
 
 * **Proposing a modality preference evaluation framework for OLLMs:** Constructing a tri-modal semantic conflict dataset with quantitative metrics to systematically measure model modality preferences.
