@@ -11,7 +11,10 @@
 [![GitHub forks][fork-img]][fork-url]
 
 -------------
-
+### Evaluation Data
+'''
+data/conflict_triplets_processed.json
+'''
 ### Preference Evaluation
 
 <p align = "justify"> 
@@ -19,13 +22,6 @@
 </p>
 <div  align="center">    
     <img src="./assets/1.1.png" width=60%/>
-</div>
-
-<p align = "justify"> 
-Pairwise MSR (%) of all evaluated OLLMs under three bi-modal conflict settings. 
-</p>
-<div  align="center">    
-    <img src="./assets/1.2.png" width=60%/>
 </div>
 
 
@@ -48,7 +44,7 @@ Case study.
 
 
 
-## Citation 🙏
+## Citation
 
 If you find this project helpful, please use the following to cite it:
 
