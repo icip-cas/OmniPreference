@@ -4,15 +4,8 @@
 
 [![arxiv](] [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT) 
 </div>
- 
-[stars-img]: https://img.shields.io/github/stars/QingFenwy7/omni_modality_preference?color=yellow
-[stars-url]: https://github.com/QingFenwy7/omni_modality_preference/stargazers
-[fork-img]: https://img.shields.io/github/forks/QingFenwy7/omni_modality_preference?color=lightblue&label=fork
-[fork-url]: https://github.com/QingFenwy7/omni_modality_preference/network/members
 
-<div align="center">
-<h1>[![GitHub stars][stars-img]][stars-url]
-<h1> [![GitHub forks][fork-img]][fork-url]
+
 
 -------------
 ## 🎯 What this paper does
