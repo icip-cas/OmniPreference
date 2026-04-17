@@ -11,8 +11,8 @@
 [fork-url]: https://github.com/QingFenwy7/omni_modality_preference/network/members
 
 <div align="center">
-[![GitHub stars][stars-img]][stars-url]
-[![GitHub forks][fork-img]][fork-url]
+<h1>[![GitHub stars][stars-img]][stars-url]
+<h1> [![GitHub forks][fork-img]][fork-url]
 
 -------------
 ## 🎯 What this paper does
