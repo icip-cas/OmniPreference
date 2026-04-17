@@ -19,11 +19,11 @@
 ```
 data/conflict_triplets_processed.json
 ```
-📍 **eval**:
+📍 **Eval**:
 ```
 eval/run_tri-modal.py
 ```
-📍 **probe**:
+📍 **Probe**:
 ```
 probe/train.py   # Train linear probes
 probe/acc.py     # Calculate accuracy
