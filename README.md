@@ -2,7 +2,7 @@
 <h1> Beyond Text-Dominance: Understanding Modality Preference of Omni-modal Large Language Models </h1>
 
 
-[![arxiv](] [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT) 
+[![arxiv](https://img.shields.io/badge/Arxiv-2508.15407-b31b1b.svg?logo=arXiv)](https://arxiv.org/pdf/2604.16902)[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT) 
 </div>
 
 
@@ -37,5 +37,10 @@ probe/pred.py    # Predict preference probabilities
 If you find this project helpful, please use the following to cite it:
 
 ```
-
+@inproceedings{Yan2026BeyondTU,
+  title={Beyond Text-Dominance: Understanding Modality Preference of Omni-modal Large Language Models},
+  author={Xinru Yan and Boxi Cao and Yaojie Lu and Hongyu Lin and Weixiang Zhou and Le Sun and Xianpei Han},
+  year={2026},
+  url={https://api.semanticscholar.org/CorpusID:287618201}
+}
 ```
