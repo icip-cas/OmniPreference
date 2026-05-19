@@ -37,10 +37,10 @@ probe/pred.py    # Predict preference probabilities
 If you find this project helpful, please use the following to cite it:
 
 ```
-@inproceedings{Yan2026BeyondTU,
+@article{yan2026beyond,
   title={Beyond Text-Dominance: Understanding Modality Preference of Omni-modal Large Language Models},
-  author={Xinru Yan and Boxi Cao and Yaojie Lu and Hongyu Lin and Weixiang Zhou and Le Sun and Xianpei Han},
-  year={2026},
-  url={https://api.semanticscholar.org/CorpusID:287618201}
+  author={Yan, Xinru and Cao, Boxi and Lu, Yaojie and Lin, Hongyu and Zhou, Weixiang and Sun, Le and Han, Xianpei},
+  journal={arXiv preprint arXiv:2604.16902},
+  year={2026}
 }
 ```
