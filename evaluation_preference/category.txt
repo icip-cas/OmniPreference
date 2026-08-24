@@ -1,0 +1,318 @@
+1. Animal Activities
+   alligators, crocodiles hissing
+   baltimore oriole calling
+   barn swallow calling
+   bee, wasp, etc. buzzing
+   bird chirping, tweeting
+   bird squawking
+   bird wings flapping
+   black capped chickadee calling
+   bull bellowing
+   canary calling
+   cat caterwauling
+   cat growling
+   cat hissing
+   cat meowing
+   cat purring
+   cattle mooing
+   cattle, bovinae cowbell
+   cheetah chirrup
+   chicken clucking
+   chicken crowing
+   chimpanzee pant-hooting
+   chinchilla barking
+   chipmunk chirping
+   cow lowing
+   coyote howling
+   cricket chirping
+   crow cawing
+   cuckoo bird calling
+   dinosaurs bellowing
+   dog barking
+   dog baying
+   dog bow-wow
+   dog growling
+   dog howling
+   dog whimpering
+   donkey, ass braying
+   duck quacking
+   eagle screaming
+   elephant trumpeting
+   elk bugling
+   ferret dooking
+   fly, housefly buzzing
+   fox barking
+   francolin calling
+   frog croaking
+   gibbon howling
+   goat bleating
+   goose honking
+   horse clip-clop
+   horse neighing
+   lions growling
+   lions roaring
+   magpie calling
+   mosquito buzzing
+   mouse pattering
+   mouse squeaking
+   mynah bird singing
+   otter growling
+   owl hooting
+   parrot talking
+   penguins braying
+   pheasant crowing
+   pig oinking
+   pigeon, dove cooing
+   sea lion barking
+   sheep bleating
+   snake hissing
+   snake rattling
+   turkey gobbling
+   warbler chirping
+   whale calling
+   wood thrush calling
+   woodpecker pecking tree
+   zebra braying
+
+2.Human Activities
+baby babbling
+baby crying
+baby laughter
+child speech, kid speaking
+children shouting
+female speech, woman speaking
+heart sounds, heartbeat
+lip smacking
+male speech, man speaking
+people babbling
+people battle cry
+people belly laughing
+people booing
+people burping
+people cheering
+people coughing
+people crowd
+people farting
+people gargling
+people giggling
+people hiccup
+people humming
+people nose blowing
+people screaming
+people slurping
+people sneezing
+people sniggering
+people sobbing
+people whispering
+people whistling
+chopping food
+eating with cutlery
+footsteps on snow
+people clapping
+people eating
+people eating apple
+people eating crisps
+people eating noodle
+people finger snapping
+people marching
+people running
+people shuffling
+people slapping
+writing on blackboard with chalk
+basketball bounce
+bouncing on trampoline
+bowling impact
+golf driving
+playing badminton
+playing darts
+playing hockey
+playing lacrosse
+playing squash
+playing table tennis
+playing tennis
+playing volleyball
+roller coaster running
+rope skipping
+rowboat, canoe, kayak rowing
+sailing
+scuba diving
+shot football
+skateboarding
+skiing
+striking bowling
+striking pool
+swimming
+tap dancing
+
+3. Musical Activities
+   beat boxing Beatbox
+   child singing
+   disc scratching
+   female singing
+   male singing
+   metronome
+   orchestra
+   playing accordion
+   playing acoustic guitar
+   playing bagpipes
+   playing banjo
+   playing bass drum
+   playing bass guitar
+   playing bassoon
+   playing bongo
+   playing bugle
+   playing castanets
+   playing cello
+   playing clarinet
+   playing congas
+   playing cornet
+   playing cymbal
+   playing didgeridoo
+   playing djembe
+   playing double bass
+   playing drum kit
+   playing electric guitar
+   playing electronic organ
+   playing erhu
+   playing flute
+   playing french horn
+   playing glockenspiel
+   playing gong
+   playing guiro
+   playing hammond organ
+   playing harmonica
+   playing harp
+   playing harpsichord
+   playing mandolin
+   playing marimba, xylophone
+   playing oboe
+   playing piano
+   playing saxophone
+   playing shofar
+   playing sitar
+   playing snare drum
+   playing steel guitar, slide guitar
+   playing steelpan
+   playing synthesizer
+   playing tabla
+   playing tambourine
+   playing theremin
+   playing timbales
+   playing timpani
+   playing trombone
+   playing trumpet
+   playing tuning fork
+   playing tympani
+   playing ukulele
+   playing vibraphone
+   playing violin, fiddle
+   playing washboard
+   playing zither
+   rapping
+   singing bowl
+   singing choir
+   tapping guitar
+   yodelling
+4. Transportation Activities
+   air horn
+   airplane
+   airplane flyby
+   ambulance siren
+   car engine idling
+   car engine knocking
+   car engine starting
+   car passing by
+   driving buses
+   driving motorcycle
+   driving snowmobile
+   engine accelerating, revving, vroom
+   fire truck siren
+   foghorn
+   helicopter
+   ice cream truck, ice cream van
+   motorboat, speedboat acceleration
+   opening or closing car doors
+   opening or closing car electric windows
+   police car (siren)
+   police radio chatter
+   race car, auto racing
+   railroad car, train wagon
+   reversing beeps
+   skidding
+   subway, metro, underground
+   train horning
+   train wheels squealing
+   train whistling
+   vehicle horn, car horn, honking
+5. Natural Phenomena
+   fire crackling
+   hail
+   ice cracking
+   ocean burbling
+   raining
+   sea waves
+   sloshing water
+   splashing water
+   spraying water
+   squishing water
+   stream burbling
+   thunder
+   tornado roaring
+   underwater bubbling
+   volcano explosion
+   waterfall burbling
+   wind noise
+   wind rustling leaves
+6. Machine & Device Operations
+   air conditioning noise
+   alarm clock ringing
+   bathroom ventilation fan running
+   cell phone buzzing
+   cupboard opening or closing
+   cutting hair with electric trimmers
+   door slamming
+   electric shaver, electric razor shaving
+   eletric blender running
+   hair dryer drying
+   mouse clicking
+   opening or closing drawers
+   plastic bottle crushing
+   popping popcorn
+   printer printing
+   ripping paper
+   running electric fan
+   sliding door
+   smoke detector beeping
+   strike lighter
+   telephone bell ringing
+   toilet flushing
+   typing on computer keyboard
+   typing on typewriter
+   using sewing machines
+   vacuum cleaner cleaning floors
+   wind chime
+   arc welding
+   blowtorch igniting
+   chainsawing trees
+   chopping wood
+   electric grinder grinding
+   extending ladders
+   forging swords
+   hammering nails
+   hedge trimmer running
+   lathe spinning
+   lawn mowing
+   planing timber
+   pumping water
+   sharpen knife
+   tractor digging
+   cap gun shooting
+   church bell ringing
+   civil defense siren
+   fireworks banging
+   firing cannon
+   firing muskets
+   lighting firecrackers
+   machine gun shooting
+   missile launch
+   slot machine
