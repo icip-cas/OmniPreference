@@ -21,17 +21,27 @@ This repository supports four connected experiments:
 - **Causal intervention and detection:** steer probe-derived modality directions and reuse probe scores for zero-shot hallucination detection.
 
 ## Contents
-
+- [Repository Structure](#repository-structure)
 - [Installation](#installation)
 - [Quick Start](#quick-start)
 - [Layer-wise Preference Probing](#layer-wise-preference-probing)
 - [Hallucination Correlation and Detection](#hallucination-correlation-and-detection)
 - [Causal Steering](#causal-steering)
-- [Repository Structure](#repository-structure)
 - [Reproducibility Notes](#reproducibility-notes)
 - [Citation](#citation)
 - [Acknowledgements](#acknowledgements)
 
+## Repository Structure
+
+```text
+.
+|-- assets/                  # Paper figures used in this README
+|-- evaluation_preference/  # Conflict construction, model inference, MSR statistics
+|-- probe_validity/         # Model-specific hidden-state extraction and layer probes
+|-- correlation/            # CMM/AVHBench extraction, significance tests, AUROC
+|-- casual_analysis/        # Probe-derived activation steering
+`-- README.md
+```
 
 ## Installation
 
@@ -52,18 +62,6 @@ pip install flash-attn --no-build-isolation
 ```
 
 MiniCPM-o, OmniVinci, Ming-Lite-Omni, and Qwen3-Omni may require additional dependencies or specific `transformers` revisions from their official repositories. Install the requirements of the model adapter you plan to run.
-
-## Repository Structure
-
-```text
-.
-|-- assets/                  # Paper figures used in this README
-|-- evaluation_preference/  # Conflict construction, model inference, MSR statistics
-|-- probe_validity/         # Model-specific hidden-state extraction and layer probes
-|-- correlation/            # CMM/AVHBench extraction, significance tests, AUROC
-|-- casual_analysis/        # Probe-derived activation steering
-`-- README.md
-```
 
 ## Quick Start
 
