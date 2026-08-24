@@ -1,11 +1,9 @@
 # Beyond Text-Dominance: Understanding Modality Preference of Omni-Modal Large Language Models
 
-This is the reproducible artifact of the paper **"Beyond Text-Dominance: Understanding Modality Preference of Omni-Modal Large Language Models"**.
-
 The paper studies **modality preference** in native omni-modal large language models (OLLMs): when text, vision, and audio provide conflicting evidence, which modality determines the model's answer? This artifact contains code for constructing a trimodal conflict benchmark, measuring modality selection rates, probing preference formation across decoder layers, analyzing its relationship with cross-modal hallucination, and causally steering modality-preference directions.
 
 <p align="center">
-  <img src="assets/overview.png" alt="Overview of the Omni-Preference framework" width="100%">
+  <img src="assets/overview.png" alt="Overview of our analytical framework" width="100%">
 </p>
 
 ## Table of Contents
