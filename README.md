@@ -34,13 +34,12 @@ This repository supports four connected experiments:
 ## Repository Structure
 
 ```text
-.
 |-- assets/                  # Paper figures used in this README
 |-- evaluation_preference/  # Conflict construction, model inference, MSR statistics
 |-- probe_validity/         # Model-specific hidden-state extraction and layer probes
 |-- correlation/            # CMM/AVHBench extraction, significance tests, AUROC
 |-- casual_analysis/        # Probe-derived activation steering
-`-- README.md
+-- README.md
 ```
 
 ## Installation
