@@ -1,7 +1,7 @@
 <div align="center">
 
 # Beyond Text-Dominance: Understanding Modality Preference of Omni-Modal Large Language Models
-
+</div>
 
 When text, vision, and audio conflict, most native omni-modal large language models prefer visual evidence. This preference emerges in the middle-to-late decoder layers, causally contributes to cross-modal hallucination, and can be reused as a zero-shot hallucination signal.
 
