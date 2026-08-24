@@ -1,345 +1,73 @@
+<div align="center">
+
 # Beyond Text-Dominance: Understanding Modality Preference of Omni-Modal Large Language Models
 
-The paper studies **modality preference** in native omni-modal large language models: when text, vision, and audio provide conflicting evidence, which modality determines the model's answer? This artifact contains code for constructing a trimodal conflict benchmark, measuring modality selection rates, probing preference formation across decoder layers, analyzing its relationship with cross-modal hallucination, and causally steering modality-preference directions.
+### Official Implementation
+
+Xinru Yan<sup>1,2</sup>, Boxi Cao<sup>1</sup>, Jialun Cao<sup>3</sup>, Yaojie Lu<sup>1</sup>, Hongyu Lin<sup>1</sup>, Weixiang Zhou<sup>1</sup>, Le Sun<sup>1</sup>, Xianpei Han<sup>1</sup>
+
+<sup>1</sup>Institute of Software, Chinese Academy of Sciences  
+<sup>2</sup>University of Chinese Academy of Sciences  
+<sup>3</sup>The Hong Kong University of Science and Technology
+
+</div>
+
+> **TL;DR:** When text, vision, and audio conflict, most native omni-modal large language models prefer visual evidence. This preference emerges in the middle-to-late decoder layers, causally contributes to cross-modal hallucination, and can be reused as a zero-shot hallucination signal.
 
 <p align="center">
-  <img src="assets/overview.png" alt="Overview of our analytical framework" width="100%">
+  <img src="assets/overview.png" alt="Overview of Omni-Preference" width="100%">
 </p>
 
-## Table of Contents
+## Overview
 
-- [Source File Structure](#source-file-structure)
-- [Prerequisites](#prerequisites)
-- [Study Design](#study-design)
-- [Design](#design)
-- [Reproduce](#reproduce)
-- [Reproduction of Result Summary](#reproduction-of-result-summary)
-- [Generated Analysis Results](#generated-analysis-results)
-- [Notes](#notes)
+Native omni-modal large language models (OLLMs) map text, vision, and audio into a unified representation space, but they do not necessarily use these modalities equally. **Omni-Preference** studies what happens when the three modalities provide mutually conflicting semantic evidence.
 
-## Source File Structure
+This repository supports four connected experiments:
 
-```plaintext
-/Omni-Preference-main
-    /assets
-        overview.png                              # Overall analytical framework
-        tri_modal_msr.png                         # MSR results for the ten evaluated OLLMs
-        probe_train_pipeline.png                  # Layer-wise probe training pipeline
-        relative_depth_accuracy_curve.png         # Probe accuracy across relative depth
-        qwen2.5_omni_7b_cmm_kde.png               # Distractor-preference distributions on CMM
-        qwen2.5_omni_7b_steering.png              # Qwen2.5-Omni-7B steering results
-    /evaluation_preference
-        construct_tri_conflicrt_sample.py         # Construct balanced trimodal conflicts
-        get_correct_sample.py                     # Keep unimodally correct samples
-        get_common_correct_sample.py              # Intersect correct samples across models/modalities
-        *_run_conflict_triplets.py                # Model-specific preference inference
-        stat_modality_bias.py                     # Compute modality counts and MSR
-        bootstrap.py                              # Bootstrap 95% confidence intervals
-        category.txt                              # Six semantic categories used for construction
-    /probe_validity
-        /probe_train_<model>
-            split_data.py                         # Build balanced train/validation/test splits
-            conflict_three_modality_hiddenstates.py
-                                                   # Extract hidden states and soft labels
-            train_probe_layer.py                  # Train one linear probe per layer
-            test_probe_layer_acc.py               # Evaluate and plot layer-wise accuracy
-    /correlation
-        *response_hiddenstates.py                 # Extract CMM/AVHBench hidden states
-        layer_all_pred.py                         # Apply trained probes to every layer
-        compute_p_value.py                        # Mann-Whitney U significance test
-        compute_AUROC_per_layer.py                # Zero-shot hallucination AUROC
-    /casual_analysis                              # Historical directory name; causal analysis code
-        /qwen
-            AVH_*_intervention_response.py        # AVHBench activation steering
-            Omnibench_*_intervention_response.py  # OmniBench steering controls
-        acc.py                                    # AVHBench result accuracy
-        acc_omnibench.py                          # OmniBench result accuracy
-    README.md
-```
+- **Preference evaluation:** construct a controlled trimodal conflict benchmark and quantify each model's modality preference with Modality Selection Rate (MSR).
+- **Mechanistic probing:** train a linear probe at every decoder layer to locate when modality preference forms.
+- **Hallucination analysis:** measure how abnormal preference for a distractor modality relates to cross-modal hallucination.
+- **Causal intervention and detection:** steer probe-derived modality directions and reuse probe scores for zero-shot hallucination detection.
 
-## Prerequisites
+### Key Findings
 
-- Python 3.10 or newer
+- Eight of the ten evaluated OLLMs exhibit a clear visual preference, departing from the text dominance commonly reported for traditional vision-language models.
+- Modality preference evolves through four stages - **Absence, Emergence, Peak, and Decline** - and is strongest in the middle-to-late decoder layers.
+- Hallucinated samples have significantly higher probe-estimated preference for the task's distractor modality.
+- Suppressing the distractor direction reduces hallucination, while amplifying it generally has the opposite effect.
+- On CMM Audio Dominance, probe-based zero-shot hallucination detection reaches an average AUROC of **0.83** across Qwen2.5-Omni-7B, MiniCPM-o-2.6, and Qwen3-Omni.
 
-Create an environment and install the common dependencies:
+## Contents
 
-```shell
-conda create -n omni-preference python=3.10 -y
-conda activate omni-preference
+- [Main Results](#main-results)
+- [Supported Models and Experiments](#supported-models-and-experiments)
+- [Installation](#installation)
+- [Data Preparation](#data-preparation)
+- [Quick Start](#quick-start)
+- [Layer-wise Preference Probing](#layer-wise-preference-probing)
+- [Hallucination Correlation and Detection](#hallucination-correlation-and-detection)
+- [Causal Steering](#causal-steering)
+- [Repository Structure](#repository-structure)
+- [Reproducibility Notes](#reproducibility-notes)
+- [Citation](#citation)
+- [Acknowledgements](#acknowledgements)
 
-# Install the PyTorch build matching your CUDA version first.
-pip install torch torchvision torchaudio
+## Main Results
 
-pip install transformers accelerate safetensors qwen-omni-utils \
-  numpy scipy scikit-learn matplotlib tqdm pillow \
-  librosa soundfile decord moviepy av openai
-```
+### Modality Preference Landscape
 
-The Qwen probe-extraction scripts request FlashAttention 2 explicitly:
+For modality $m$, the Modality Selection Rate is
 
-```shell
-pip install flash-attn --no-build-isolation
-```
+$$
+\mathrm{MSR}(m)=\frac{1}{N}\sum_{i=1}^{N}
+\mathbf{1}\left[\hat{y}_i=\mathrm{opt}_i(m)\right].
+$$
 
-MiniCPM-o, OmniVinci, Ming-Lite-Omni, and Qwen3-Omni may require the package versions and remote-code dependencies specified by their official model repositories. Install those model-specific requirements in the same environment before running the corresponding adapter.
+The uniform baseline for text, vision, and audio is $1/3$.
 
-## Study Design
-
-The artifact follows the paper's experimental pipeline.
-
-1. Construct trimodal conflict samples from semantically aligned XModBench records. Text, image, and audio are drawn from three distinct categories among Animals, Human Activities, Music, Appliances and Machinery, Vehicles and Traffic, and Natural Sounds.
-2. Balance all $\binom{6}{3}=20$ category triplets, modality-to-category assignments, and answer-option orders. Each candidate option is grounded in exactly one modality.
-3. Remove samples that a model cannot answer correctly from the corresponding unimodal input. Intersect retained samples across evaluated models to obtain the shared 1,000-sample preference set.
-4. Evaluate ten OLLMs and compute the **Modality Selection Rate (MSR)**. For modality $m$,
-
-   $$
-   \mathrm{MSR}(m)=\frac{1}{N}\sum_{i=1}^{N}
-   \mathbf{1}\left[\hat{y}_i=\mathrm{opt}_i(m)\right].
-   $$
-
-   The uniform trimodal baseline is $1/3$.
-5. For each open-source model, sample 1,000 examples per selected modality, forming a balanced 3,000-example probe dataset with an 8:1:1 train/validation/test split.
-6. Extract the last prompt-token hidden state at each decoder layer, apply L2 normalization, and train a linear classifier with three outputs ordered as **text, vision, audio**. The soft target is formed from the model's probabilities for the three option tokens.
-7. Apply the probes to CMM and AVHBench. Test whether hallucinated samples have higher predicted preference for the task's distractor modality, intervene along the corresponding probe-weight direction, and use the distractor probability as a zero-shot hallucination score.
-
-The distractor modality used by each downstream task is:
-
-| Benchmark task | Distractor modality |
-| --- | --- |
-| CMM Language Dominance | Text |
-| CMM Visual Dominance | Vision |
-| CMM Audio Dominance | Audio |
-| AVHBench Video-driven Audio Hallucination | Vision |
-| AVHBench Audio-driven Video Hallucination | Audio |
-
-## Design
-
-The complete evaluation, probing, intervention, and detection framework:
-
-![Omni-Preference framework](assets/overview.png)
-
-The layer-wise preference-probe training pipeline:
-
-![Layer-wise probe training](assets/probe_train_pipeline.png)
-
-
-### 1. Prepare the external data
-
-To construct conflict samples, prepare an aligned XModBench index as a JSON array. Every record must contain non-empty `id`, `text`, `image`, and `audio` fields, and the media paths must be readable in the runtime environment.
-
-`construct_tri_conflicrt_sample.py` also expects two label files that pair each canonical XModBench label with its natural-language text form. These files are not released in this repository; provide them through `--text-labels` and `--processed-text-labels`. The included `evaluation_preference/category.txt` defines the six semantic categories.
-
-CMM, AVHBench, and OmniBench data are likewise external. Preserve or rewrite the media paths in their JSON files so that they resolve locally.
-
-### 2. Construct a balanced trimodal conflict pool
-
-```shell
-python evaluation_preference/construct_tri_conflicrt_sample.py \
-  --input /path/to/xmodbench_modality_path.json \
-  --categories evaluation_preference/category.txt \
-  --text-labels /path/to/text_label.json \
-  --processed-text-labels /path/to/text_label_processed.json \
-  --output outputs/modality_conflict_5000.json \
-  --num-samples 5000 \
-  --seed 20260801 \
-  --include-question
-```
-
-The constructor validates unique source triplets, category coverage, balanced category combinations, balanced modality assignments, and balanced answer-option ordering before writing the output.
-
-### 3. Build the shared unimodally correct set
-
-Run the matching model on the text-only, image-only, and audio-only versions of the conflict pool. Each result JSON must retain the sample `options` and add `model_raw_output`. Filter the correct samples for each modality:
-
-```shell
-python evaluation_preference/get_correct_sample.py \
-  --input /path/to/text_only_results.json \
-  --modality text \
-  --output outputs/correct/model_text.json
-
-python evaluation_preference/get_correct_sample.py \
-  --input /path/to/image_only_results.json \
-  --modality image \
-  --output outputs/correct/model_image.json
-
-python evaluation_preference/get_correct_sample.py \
-  --input /path/to/audio_only_results.json \
-  --modality audio \
-  --output outputs/correct/model_audio.json
-```
-
-Intersect the retained files from all modalities and models:
-
-```shell
-python evaluation_preference/get_common_correct_sample.py \
-  --inputs \
-    outputs/correct/model1_text.json \
-    outputs/correct/model1_image.json \
-    outputs/correct/model1_audio.json \
-    outputs/correct/model2_text.json \
-    outputs/correct/model2_image.json \
-    outputs/correct/model2_audio.json \
-  --output outputs/conflict_sample_1000.json
-```
-
-Continue the `--inputs` list with the retained files for every evaluated model.
-
-The paper uses the 1,000 samples shared by all ten evaluated OLLMs. A conflict pool without this filtering measures both modality preference and unimodal recognition errors, and is therefore not directly comparable to the reported MSR values.
-
-### 4. Evaluate modality preference
-
-The following example evaluates Qwen2.5-Omni-7B:
-
-```shell
-python evaluation_preference/qwen-2.5-omni-7B_run_conflict_triplets.py \
-  --data_file outputs/conflict_sample_1000.json \
-  --model_path /path/to/Qwen2.5-Omni-7B \
-  --output_dir outputs/preference/qwen2.5-7b \
-  --max_new_tokens 8
-```
-
-The script currently writes a historically named `Qwen2.5-Omni-7B-weak-conflict-audio-results.json` file even when a regular conflict set is supplied. Compute MSR from that output:
-
-```shell
-python evaluation_preference/stat_modality_bias.py \
-  --input outputs/preference/qwen2.5-7b/Qwen2.5-Omni-7B-weak-conflict-audio-results.json
-```
-
-Equivalent adapters are provided for Qwen2.5-Omni-3B, Qwen3-Omni, MiniCPM-o-2.6, OmniVinci, Ming-Lite-Omni 1.5, and four Gemini models.
-
-For Gemini through OpenRouter, keep the key outside source files:
-
-```shell
-# macOS/Linux
-export OPENROUTER_API_KEY="your-key"
-
-# Windows PowerShell
-$env:OPENROUTER_API_KEY="your-key"
-
-python evaluation_preference/gemini-2.5Pro_run_conflict_triplets.py \
-  --data_file outputs/conflict_sample_1000.json \
-  --model_name google/gemini-2.5-pro \
-  --output_dir outputs/preference/gemini-2.5-pro
-```
-
-`evaluation_preference/bootstrap.py` reproduces the 10,000-resample confidence interval analysis. Set its `PATH` constant to a generated result JSON before running it.
-
-### 5. Train and evaluate layer-wise probes
-
-Each model directory under `probe_validity/` implements the same workflow. The Qwen2.5-Omni-7B example is shown below.
-
-First, set `INPUT_JSON` in `probe_validity/probe_train_qwen2.5-7B/split_data.py` to a preference-result file containing at least 1,000 selected samples for each modality. Then run the splitter from that directory:
-
-```shell
-cd probe_validity/probe_train_qwen2.5-7B
-python split_data.py
-```
-
-This produces 2,400 training, 300 validation, and 300 test examples. Extract hidden states separately for each split:
-
-```shell
-python conflict_three_modality_hiddenstates.py --data_file train.json --model_path /path/to/Qwen2.5-Omni-7B --output_dir hiddenstates/train
-python conflict_three_modality_hiddenstates.py --data_file val.json   --model_path /path/to/Qwen2.5-Omni-7B --output_dir hiddenstates/val
-python conflict_three_modality_hiddenstates.py --data_file test.json  --model_path /path/to/Qwen2.5-Omni-7B --output_dir hiddenstates/test
-```
-
-The extractor uses the fixed filename `Qwen2.5-Omni-7B-test_last_prompt_token.pt` in each output directory. Train one probe per layer and evaluate the checkpoints:
-
-```shell
-python train_probe_layer.py \
-  --train_pt hiddenstates/train/Qwen2.5-Omni-7B-test_last_prompt_token.pt \
-  --val_pt hiddenstates/val/Qwen2.5-Omni-7B-test_last_prompt_token.pt \
-  --output_dir probe_softmax \
-  --epochs 200 \
-  --batch_size 256 \
-  --lr 1e-3
-
-python test_probe_layer_acc.py \
-  --test_pt hiddenstates/test/Qwen2.5-Omni-7B-test_last_prompt_token.pt \
-  --probe_dir probe_softmax \
-  --output_png test_acc_by_layer.png
-```
-
-Repeat the corresponding directory-specific workflow for Qwen2.5-Omni-3B, Qwen3-Omni, MiniCPM-o-2.6, OmniVinci, or Ming-Lite-Omni 1.5.
-
-### 6. Analyze hallucination correlation and detection
-
-Extract Qwen2.5-Omni-7B hidden states on a CMM task:
-
-```shell
-cd ../../
-
-python correlation/qwen2.5-omni-cmm-text-driven_response_hiddenstates.py \
-  --data_file /path/to/cmm-language-driven.json \
-  --model_path /path/to/Qwen2.5-Omni-7B \
-  --output_dir outputs/correlation/cmm-language
-```
-
-Apply the trained probes to every extracted layer:
-
-```shell
-python correlation/layer_all_pred.py \
-  --input_pt outputs/correlation/cmm-language/Qwen2.5-Omni-7B-CMM-language-driven-hidden-states.pt \
-  --results_json outputs/correlation/cmm-language/Qwen2.5-Omni-7B-CMM-language-driven-results.json \
-  --probe_dir probe_validity/probe_train_qwen2.5-7B/probe_softmax \
-  --output_json outputs/correlation/cmm-language/all_layers.json \
-  --start_layer 1 \
-  --end_layer 28
-```
-
-Use the peak layer identified by the matching probe-accuracy curve for the Mann-Whitney U test:
-
-```shell
-python correlation/compute_p_value.py \
-  --input_json outputs/correlation/cmm-language/all_layers.json \
-  --distractor_modality text \
-  --layer PEAK_LAYER \
-  --output_txt outputs/correlation/cmm-language/p_value.txt
-```
-
-Compute zero-shot hallucination AUROC at every available layer:
-
-```shell
-python correlation/compute_AUROC_per_layer.py \
-  --input_json outputs/correlation/cmm-language/all_layers.json \
-  --probe_dir probe_validity/probe_train_qwen2.5-7B/probe_softmax \
-  --distractor_modality text \
-  --output_txt outputs/correlation/cmm-language/auroc_by_layer.txt
-```
-
-The AUROC script uses `visual` for the vision class, whereas the p-value and intervention scripts use `vision`. Preserve this historical command-line spelling difference.
-
-### 7. Perform causal steering
-
-The intervention code is under `casual_analysis/`; the misspelling is retained for compatibility. To sweep the visual distractor direction on AVHBench Video-driven Audio Hallucination:
-
-```shell
-for alpha in -0.7 -0.5 -0.3 0 0.3 0.5 0.7; do
-  python casual_analysis/qwen/AVH_Video_driven_intervention_response.py \
-    --data_file /path/to/avh-video-driven-audio-hallucination.json \
-    --video_dir /path/to/avhbench/videos \
-    --model_path /path/to/Qwen2.5-Omni-7B \
-    --probe_dir probe_validity/probe_train_qwen2.5-7B/probe_softmax \
-    --peak_layer PEAK_LAYER \
-    --distractor vision \
-    --coeff "$alpha" \
-    --output_dir outputs/steering/qwen2.5-7b/video-driven
-done
-```
-
-The intervention is $h'=h+\alpha d$, where $d$ is the normalized probe-weight column for the distractor modality. Negative coefficients suppress the direction, zero is the unmodified baseline, and positive coefficients amplify it. To aggregate results, set the input path inside `casual_analysis/acc.py` for AVHBench or `casual_analysis/acc_omnibench.py` for OmniBench, then run the selected script.
-
-## Reproduction of Result Summary
-
-The paper reports the following main results.
-
-- **OLLMs are predominantly vision-preferring.** Eight of the ten evaluated models select visual evidence in more than half of the shared trimodal conflict samples. Audio is underused: audio MSR is at most 21% and is below 15% for most models.
-- **Preference emerges inside the decoder.** Layer-wise probe behavior follows four stages: Absence in roughly the first 40% of layers, Emergence around 40%-70%, Peak around 70%-90%, and Decline in the final layers. Qwen2.5-Omni-7B reaches a peak probe accuracy of 0.91.
-- **Preference correlates with hallucination.** On Qwen2.5-Omni-7B, hallucinated CMM samples have systematically higher probe-estimated preference for the distractor modality. Mann-Whitney U p-values are $1.82\times10^{-6}$ for Language Dominance, $3.99\times10^{-12}$ for Visual Dominance, and $1.05\times10^{-30}$ for Audio Dominance.
-- **The effect is causal.** On AVHBench Video-driven Audio Hallucination, suppressing Qwen2.5-Omni-7B's visual distractor direction with $\alpha=-0.7$ raises accuracy from 72.14% to 81.53%. Applying the same visual suppression to OmniBench raises accuracy from 49.47% to 56.14%.
-- **The probes support zero-shot hallucination detection.** Across Qwen2.5-Omni-7B, MiniCPM-o-2.6, and Qwen3-Omni, the mean AUROC on CMM Audio Dominance is 0.83, without downstream task-specific training.
-
-Rounded MSR values from the paper are:
+<p align="center">
+  <img src="assets/tri_modal_msr.png" alt="Modality Selection Rate across ten OLLMs" width="78%">
+</p>
 
 | Model | Text | Vision | Audio |
 | --- | ---: | ---: | ---: |
@@ -354,38 +82,372 @@ Rounded MSR values from the paper are:
 | Ming-Lite-Omni 1.5 | **50%** | 48% | 2% |
 | Qwen3-Omni-30B-A3B-Instruct | **54%** | 42% | 4% |
 
-## Generated Analysis Results
+Values are rounded to the nearest percentage. The reported evaluation set contains 1,000 samples that every evaluated model answers correctly when each modality is presented independently.
 
-**RQ1: How can modality preference be quantified, and what patterns emerge?**
+### Layer-wise Preference Formation
 
-Modality Selection Rate across ten OLLMs:
+For each decoder layer, we extract the last prompt-token hidden state, apply L2 normalization, and train a linear classifier with three outputs ordered as **text, vision, audio**. Each model uses a balanced pool of 3,000 examples with an 8:1:1 train/validation/test split.
 
-![Trimodal modality selection rate](assets/tri_modal_msr.png)
+<p align="center">
+  <img src="assets/probe_train_pipeline.png" alt="Layer-wise preference probe training pipeline" width="80%">
+</p>
 
-**RQ2: How does modality preference form inside OLLMs?**
+<p align="center">
+  <img src="assets/relative_depth_accuracy_curve.png" alt="Probe accuracy across relative decoder depth" width="72%">
+</p>
 
-Layer-wise probe accuracy across relative model depth:
+Preference signals are weak in approximately the first 40% of layers, rise rapidly between 40% and 70% depth, peak around 70%-90%, and decline in the final layers. Qwen2.5-Omni-7B reaches a peak probe accuracy of 0.91.
 
-![Layer-wise probe accuracy](assets/relative_depth_accuracy_curve.png)
+### Preference and Cross-modal Hallucination
 
-**RQ3: How can preference mechanisms improve downstream reliability?**
+<p align="center">
+  <img src="assets/qwen2.5_omni_7b_cmm_kde.png" alt="Distractor preference distributions on CMM" width="92%">
+</p>
 
-Distractor-modality preference distributions for hallucination and non-hallucination samples:
+On Qwen2.5-Omni-7B, the Mann-Whitney U test confirms that hallucination and non-hallucination samples have significantly different distractor-preference distributions:
 
-![CMM distractor preference distributions](assets/qwen2.5_omni_7b_cmm_kde.png)
+| CMM task | Distractor | p-value |
+| --- | --- | ---: |
+| Language Dominance | Text | $1.82\times10^{-6}$ |
+| Visual Dominance | Vision | $3.99\times10^{-12}$ |
+| Audio Dominance | Audio | $1.05\times10^{-30}$ |
 
-Accuracy under Qwen2.5-Omni-7B steering coefficients:
+The probe-estimated distractor probability also supports zero-shot hallucination detection:
 
-![Qwen2.5-Omni-7B steering results](assets/qwen2.5_omni_7b_steering.png)
+| Task | Qwen2.5-Omni-7B | MiniCPM-o-2.6 | Qwen3-Omni |
+| --- | ---: | ---: | ---: |
+| CMM Language Dominance | 0.68 | 0.70 | 0.65 |
+| CMM Visual Dominance | 0.73 | 0.62 | 0.57 |
+| CMM Audio Dominance | **0.86** | **0.75** | **0.87** |
+| AVHBench Video-driven Audio Hallucination | 0.57 | 0.57 | 0.52 |
+| AVHBench Audio-driven Video Hallucination | 0.63 | 0.63 | 0.72 |
 
-## Notes
+### Causal Steering
 
-- Run model-specific scripts with the checkpoint versions and processor code expected by that model. Architectures expose hidden states differently, which is why separate adapters are included.
-- Open-source preference evaluation uses deterministic decoding. Preserve `do_sample=False`, temperature zero, or the model-specific equivalent when comparing MSR values.
-- The 1,000-example shared evaluation set is produced only after unimodal-correctness filtering and intersection across all evaluated models; it is not included in this repository.
-- `split_data.py` files use editable constants rather than command-line arguments and require at least 1,000 examples assigned to each of text, image, and audio.
-- Hidden-state `.pt` files and layer-wise probe checkpoints can be large and are not released. Regenerate them with the model-specific extraction scripts.
-- Probe class order is always text, vision/image, audio. Do not change this order when interpreting probabilities or selecting probe-weight columns.
-- Layer indices are architecture-specific. Determine `PEAK_LAYER` from the corresponding model's probe curve rather than copying an index from another model.
-- Several output names and the `casual_analysis/` directory preserve historical spelling. The commands above use the names currently implemented by the code.
-- Live APIs, model revisions, attention implementations, hardware, and decoding-library versions can affect regenerated outputs. Use the paper's deterministic settings and the same filtered sample IDs for direct comparison.
+At the layer with the strongest preference signal, the probe-weight column for modality $m$ is treated as a steering direction $d_m$. The last-token hidden state is modified as
+
+$$
+h'=h+\alpha d_m.
+$$
+
+Negative $\alpha$ suppresses the selected direction and positive $\alpha$ amplifies it.
+
+<p align="center">
+  <img src="assets/qwen2.5_omni_7b_steering.png" alt="Qwen2.5-Omni-7B causal steering results" width="72%">
+</p>
+
+For Qwen2.5-Omni-7B, suppressing the visual distractor direction with $\alpha=-0.7$ improves AVHBench Video-driven Audio Hallucination accuracy from **72.14% to 81.53%**. Applying the same intervention to OmniBench improves accuracy from **49.47% to 56.14%**.
+
+## Supported Models and Experiments
+
+| Model | Preference | Layer-wise probe | CMM/AVH analysis | Steering |
+| --- | :---: | :---: | :---: | :---: |
+| Qwen2.5-Omni-3B | ✓ | ✓ | - | - |
+| Qwen2.5-Omni-7B | ✓ | ✓ | ✓ | ✓ |
+| Qwen3-Omni-30B-A3B-Instruct | ✓ | ✓ | ✓ | - |
+| MiniCPM-o-2.6 | ✓ | ✓ | ✓ | - |
+| OmniVinci | ✓ | ✓ | - | - |
+| Ming-Lite-Omni 1.5 | ✓ | ✓ | - | - |
+| Gemini 2.5 Pro / Flash | ✓ | - | - | - |
+| Gemini 3.1 Pro / 3 Flash | ✓ | - | - | - |
+
+The current released `casual_analysis/` directory contains the Qwen2.5-Omni-7B intervention implementation. The directory name is historical and intentionally preserved.
+
+## Installation
+
+We recommend Python 3.10, Linux, NVIDIA CUDA, and a recent PyTorch release. The paper's full-model experiments were run on an NVIDIA A100 80GB GPU; actual memory usage depends on the checkpoint, precision, attention implementation, and device mapping.
+
+```bash
+conda create -n omni-preference python=3.10 -y
+conda activate omni-preference
+
+# Install the PyTorch build matching your CUDA environment first.
+pip install torch torchvision torchaudio
+
+pip install transformers accelerate safetensors \
+  qwen-omni-utils numpy scipy scikit-learn matplotlib tqdm \
+  pillow librosa soundfile decord moviepy av openai
+```
+
+The Qwen probe-extraction and CMM scripts request FlashAttention 2 by default:
+
+```bash
+pip install flash-attn --no-build-isolation
+```
+
+MiniCPM-o, OmniVinci, Ming-Lite-Omni, and Qwen3-Omni may require additional dependencies or specific `transformers` revisions from their official repositories. Install the requirements of the model adapter you plan to run.
+
+## Data Preparation
+
+The repository contains code and paper figures. It does **not** include model checkpoints, benchmark media, generated conflict JSON files, hidden-state tensors, or trained probe checkpoints.
+
+### Trimodal Conflict Data
+
+The constructor expects an aligned XModBench-style JSON array. Each record must contain:
+
+```json
+{
+  "id": "sample-id",
+  "text": "canonical semantic label",
+  "image": "/absolute/or/readable/path/to/image.jpg",
+  "audio": "/absolute/or/readable/path/to/audio.wav"
+}
+```
+
+It also requires:
+
+- `evaluation_preference/category.txt`: the six semantic categories included in this repository.
+- `text_label.json`: canonical labels and IDs.
+- `text_label_processed.json`: natural-language text mapped by the same IDs.
+
+The two label-mapping JSON files and the original XModBench media are external inputs and must be supplied locally.
+
+### Hallucination Benchmarks
+
+Download CMM, AVHBench, and OmniBench from their official sources. Ensure every media path in the task JSON files resolves in your environment. The distractor modality for each task is:
+
+| Task | Distractor modality |
+| --- | --- |
+| CMM Language Dominance | Text |
+| CMM Visual Dominance | Vision |
+| CMM Audio Dominance | Audio |
+| AVHBench Video-driven Audio Hallucination | Vision |
+| AVHBench Audio-driven Video Hallucination | Audio |
+
+## Quick Start
+
+### 1. Construct the Conflict Pool
+
+```bash
+python evaluation_preference/construct_tri_conflicrt_sample.py \
+  --input /path/to/xmodbench_modality_path.json \
+  --categories evaluation_preference/category.txt \
+  --text-labels /path/to/text_label.json \
+  --processed-text-labels /path/to/text_label_processed.json \
+  --output outputs/modality_conflict_5000.json \
+  --num-samples 5000 \
+  --seed 20260801 \
+  --include-question
+```
+
+The script balances all $\binom{6}{3}=20$ category triplets, modality assignments, and answer-option orders, then validates the generated set before writing it.
+
+### 2. Build the Shared Unimodally Correct Set
+
+Run each model on text-only, image-only, and audio-only versions of the conflict pool. Each result must retain `options` and add `model_raw_output`. Filter correct samples with:
+
+```bash
+python evaluation_preference/get_correct_sample.py \
+  --input /path/to/text_only_results.json \
+  --modality text \
+  --output outputs/correct/model_text.json
+```
+
+Use `--modality image` and `--modality audio` for the other inputs, then intersect all retained files:
+
+```bash
+python evaluation_preference/get_common_correct_sample.py \
+  --inputs \
+    outputs/correct/model1_text.json \
+    outputs/correct/model1_image.json \
+    outputs/correct/model1_audio.json \
+    outputs/correct/model2_text.json \
+    outputs/correct/model2_image.json \
+    outputs/correct/model2_audio.json \
+  --output outputs/conflict_sample_1000.json
+```
+
+Continue the input list for every evaluated model. The paper reports results on the 1,000 samples retained by all ten models.
+
+### 3. Evaluate Modality Preference
+
+Example for Qwen2.5-Omni-7B:
+
+```bash
+python evaluation_preference/qwen-2.5-omni-7B_run_conflict_triplets.py \
+  --data_file outputs/conflict_sample_1000.json \
+  --model_path /path/to/Qwen2.5-Omni-7B \
+  --output_dir outputs/preference/qwen2.5-7b \
+  --max_new_tokens 8
+```
+
+Compute MSR:
+
+```bash
+python evaluation_preference/stat_modality_bias.py \
+  --input outputs/preference/qwen2.5-7b/Qwen2.5-Omni-7B-weak-conflict-audio-results.json
+```
+
+The Qwen2.5-Omni-7B script preserves the historical `weak-conflict-audio-results` output suffix even when a regular conflict set is supplied.
+
+For closed-source Gemini models, set an OpenRouter key without placing it in source files:
+
+```bash
+export OPENROUTER_API_KEY="your-key"
+
+python evaluation_preference/gemini-2.5Pro_run_conflict_triplets.py \
+  --data_file outputs/conflict_sample_1000.json \
+  --model_name google/gemini-2.5-pro \
+  --output_dir outputs/preference/gemini-2.5-pro
+```
+
+On Windows PowerShell, set the key with `$env:OPENROUTER_API_KEY="your-key"`.
+
+## Layer-wise Preference Probing
+
+Each directory under `probe_validity/` implements the same pipeline for a different model architecture:
+
+1. Create a balanced 8:1:1 split.
+2. Extract last prompt-token hidden states and option-token soft labels.
+3. Train one three-way linear probe per decoder layer.
+4. Evaluate layer-wise probe accuracy.
+
+Example for Qwen2.5-Omni-7B:
+
+```bash
+cd probe_validity/probe_train_qwen2.5-7B
+```
+
+Set `INPUT_JSON` in `split_data.py` to a sufficiently large preference-result file, then run:
+
+```bash
+python split_data.py
+
+python conflict_three_modality_hiddenstates.py \
+  --data_file train.json \
+  --model_path /path/to/Qwen2.5-Omni-7B \
+  --output_dir hiddenstates/train
+
+python conflict_three_modality_hiddenstates.py \
+  --data_file val.json \
+  --model_path /path/to/Qwen2.5-Omni-7B \
+  --output_dir hiddenstates/val
+
+python conflict_three_modality_hiddenstates.py \
+  --data_file test.json \
+  --model_path /path/to/Qwen2.5-Omni-7B \
+  --output_dir hiddenstates/test
+```
+
+Train and evaluate all layer-wise probes:
+
+```bash
+python train_probe_layer.py \
+  --train_pt hiddenstates/train/Qwen2.5-Omni-7B-test_last_prompt_token.pt \
+  --val_pt hiddenstates/val/Qwen2.5-Omni-7B-test_last_prompt_token.pt \
+  --output_dir probe_softmax \
+  --epochs 200 \
+  --batch_size 256 \
+  --lr 1e-3
+
+python test_probe_layer_acc.py \
+  --test_pt hiddenstates/test/Qwen2.5-Omni-7B-test_last_prompt_token.pt \
+  --probe_dir probe_softmax \
+  --output_png test_acc_by_layer.png
+```
+
+The hidden-state extractor uses the fixed suffix `test_last_prompt_token.pt` for all three splits; separating the output directories prevents overwriting.
+
+## Hallucination Correlation and Detection
+
+Return to the repository root and extract hidden states for a downstream task:
+
+```bash
+cd ../../
+
+python correlation/qwen2.5-omni-cmm-text-driven_response_hiddenstates.py \
+  --data_file /path/to/cmm-language-driven.json \
+  --model_path /path/to/Qwen2.5-Omni-7B \
+  --output_dir outputs/correlation/cmm-language
+```
+
+Apply every available layer-wise probe:
+
+```bash
+python correlation/layer_all_pred.py \
+  --input_pt outputs/correlation/cmm-language/Qwen2.5-Omni-7B-CMM-language-driven-hidden-states.pt \
+  --results_json outputs/correlation/cmm-language/Qwen2.5-Omni-7B-CMM-language-driven-results.json \
+  --probe_dir probe_validity/probe_train_qwen2.5-7B/probe_softmax \
+  --output_json outputs/correlation/cmm-language/all_layers.json \
+  --start_layer 1 \
+  --end_layer 28
+```
+
+Test the distractor-preference distribution at the peak layer:
+
+```bash
+python correlation/compute_p_value.py \
+  --input_json outputs/correlation/cmm-language/all_layers.json \
+  --distractor_modality text \
+  --layer PEAK_LAYER \
+  --output_txt outputs/correlation/cmm-language/p_value.txt
+```
+
+Compute per-layer zero-shot hallucination AUROC:
+
+```bash
+python correlation/compute_AUROC_per_layer.py \
+  --input_json outputs/correlation/cmm-language/all_layers.json \
+  --probe_dir probe_validity/probe_train_qwen2.5-7B/probe_softmax \
+  --distractor_modality text \
+  --output_txt outputs/correlation/cmm-language/auroc_by_layer.txt
+```
+
+The AUROC script uses `visual` for the vision class, while the p-value and intervention scripts use `vision`. This historical command-line difference is preserved in the released code.
+
+## Causal Steering
+
+The intervention code is located under `casual_analysis/`. Example: suppress the visual distractor direction on AVHBench Video-driven Audio Hallucination.
+
+```bash
+python casual_analysis/qwen/AVH_Video_driven_intervention_response.py \
+  --data_file /path/to/avh-video-driven-audio-hallucination.json \
+  --video_dir /path/to/avhbench/videos \
+  --model_path /path/to/Qwen2.5-Omni-7B \
+  --probe_dir probe_validity/probe_train_qwen2.5-7B/probe_softmax \
+  --peak_layer PEAK_LAYER \
+  --distractor vision \
+  --coeff -0.7 \
+  --output_dir outputs/steering/qwen2.5-7b/video-driven
+```
+
+Sweep `--coeff` over `-0.7 -0.5 -0.3 0 0.3 0.5 0.7` to reproduce the intervention curve. The OmniBench scripts provide the corresponding general-capability control. Set the result path inside `casual_analysis/acc.py` or `casual_analysis/acc_omnibench.py` before running the accuracy aggregator.
+
+## Repository Structure
+
+```text
+.
+|-- assets/                  # Paper figures used in this README
+|-- evaluation_preference/  # Conflict construction, model inference, MSR statistics
+|-- probe_validity/         # Model-specific hidden-state extraction and layer probes
+|-- correlation/            # CMM/AVHBench extraction, significance tests, AUROC
+|-- casual_analysis/        # Probe-derived activation steering
+`-- README.md
+```
+
+## Reproducibility Notes
+
+- Open-source preference evaluations use deterministic decoding. Preserve `do_sample=False`, temperature zero, or the model-specific equivalent when comparing MSR values.
+- The shared 1,000-example set is obtained only after unimodal-correctness filtering and intersection across all evaluated models. Evaluating an unfiltered conflict pool measures a different quantity.
+- `split_data.py` files use editable constants rather than command-line arguments and require at least 1,000 examples assigned to each modality.
+- Hidden-state tensors and probe checkpoints are not included and can require substantial disk space.
+- Probe class order is always text, vision/image, audio. Keep this order unchanged when interpreting scores or probe-weight directions.
+- Layer indices are architecture-specific. Determine `PEAK_LAYER` from the matching model's probe curve.
+- `evaluation_preference/bootstrap.py` uses 10,000 bootstrap resamples and has an editable input `PATH` constant.
+- Several filenames and the `casual_analysis/` directory retain historical spelling for compatibility with existing scripts.
+
+## Citation
+
+If you find this work useful, please consider citing:
+
+```bibtex
+@misc{yan2026beyond,
+  title  = {Beyond Text-Dominance: Understanding Modality Preference of Omni-Modal Large Language Models},
+  author = {Yan, Xinru and Cao, Boxi and Cao, Jialun and Lu, Yaojie and Lin, Hongyu and Zhou, Weixiang and Sun, Le and Han, Xianpei},
+  year   = {2026}
+}
+```
+
+## Acknowledgements
+
+This project builds on the open-source model and benchmark ecosystems around Qwen2.5-Omni, Qwen3-Omni, MiniCPM-o, OmniVinci, Ming-Lite-Omni, XModBench, CMM, AVHBench, and OmniBench. We thank their authors for making their models, data, and evaluation protocols available to the community.
