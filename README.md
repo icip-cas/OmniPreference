@@ -65,7 +65,7 @@ pip install transformers accelerate safetensors \
 pip install flash-attn --no-build-isolation
 ```
 
-MiniCPM-o, OmniVinci, Ming-Lite-Omni, and Qwen3-Omni may require additional dependencies or specific `transformers` revisions from their official repositories. Install the requirements of the model adapter you plan to run.
+MiniCPM-o, OmniVinci, Ming-Lite-Omni, and Qwen3-Omni may require additional dependencies or specific `transformers` revisions from their official repositories.
 
 ## Quick Start
 
