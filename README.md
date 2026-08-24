@@ -2,17 +2,8 @@
 
 # Beyond Text-Dominance: Understanding Modality Preference of Omni-Modal Large Language Models
 
-### Official Implementation
 
-Xinru Yan<sup>1,2</sup>, Boxi Cao<sup>1</sup>, Jialun Cao<sup>3</sup>, Yaojie Lu<sup>1</sup>, Hongyu Lin<sup>1</sup>, Weixiang Zhou<sup>1</sup>, Le Sun<sup>1</sup>, Xianpei Han<sup>1</sup>
-
-<sup>1</sup>Institute of Software, Chinese Academy of Sciences  
-<sup>2</sup>University of Chinese Academy of Sciences  
-<sup>3</sup>The Hong Kong University of Science and Technology
-
-</div>
-
-> **TL;DR:** When text, vision, and audio conflict, most native omni-modal large language models prefer visual evidence. This preference emerges in the middle-to-late decoder layers, causally contributes to cross-modal hallucination, and can be reused as a zero-shot hallucination signal.
+When text, vision, and audio conflict, most native omni-modal large language models prefer visual evidence. This preference emerges in the middle-to-late decoder layers, causally contributes to cross-modal hallucination, and can be reused as a zero-shot hallucination signal.
 
 <p align="center">
   <img src="assets/overview.png" alt="Overview of Omni-Preference" width="100%">
@@ -214,6 +205,18 @@ Download CMM, AVHBench, and OmniBench from their official sources. Ensure every 
 | AVHBench Video-driven Audio Hallucination | Vision |
 | AVHBench Audio-driven Video Hallucination | Audio |
 
+## Repository Structure
+
+```text
+.
+|-- assets/                  # Paper figures used in this README
+|-- evaluation_preference/  # Conflict construction, model inference, MSR statistics
+|-- probe_validity/         # Model-specific hidden-state extraction and layer probes
+|-- correlation/            # CMM/AVHBench extraction, significance tests, AUROC
+|-- casual_analysis/        # Probe-derived activation steering
+`-- README.md
+```
+
 ## Quick Start
 
 ### 1. Construct the Conflict Pool
@@ -413,41 +416,17 @@ python casual_analysis/qwen/AVH_Video_driven_intervention_response.py \
 
 Sweep `--coeff` over `-0.7 -0.5 -0.3 0 0.3 0.5 0.7` to reproduce the intervention curve. The OmniBench scripts provide the corresponding general-capability control. Set the result path inside `casual_analysis/acc.py` or `casual_analysis/acc_omnibench.py` before running the accuracy aggregator.
 
-## Repository Structure
 
-```text
-.
-|-- assets/                  # Paper figures used in this README
-|-- evaluation_preference/  # Conflict construction, model inference, MSR statistics
-|-- probe_validity/         # Model-specific hidden-state extraction and layer probes
-|-- correlation/            # CMM/AVHBench extraction, significance tests, AUROC
-|-- casual_analysis/        # Probe-derived activation steering
-`-- README.md
-```
-
-## Reproducibility Notes
-
-- Open-source preference evaluations use deterministic decoding. Preserve `do_sample=False`, temperature zero, or the model-specific equivalent when comparing MSR values.
-- The shared 1,000-example set is obtained only after unimodal-correctness filtering and intersection across all evaluated models. Evaluating an unfiltered conflict pool measures a different quantity.
-- `split_data.py` files use editable constants rather than command-line arguments and require at least 1,000 examples assigned to each modality.
-- Hidden-state tensors and probe checkpoints are not included and can require substantial disk space.
-- Probe class order is always text, vision/image, audio. Keep this order unchanged when interpreting scores or probe-weight directions.
-- Layer indices are architecture-specific. Determine `PEAK_LAYER` from the matching model's probe curve.
-- `evaluation_preference/bootstrap.py` uses 10,000 bootstrap resamples and has an editable input `PATH` constant.
-- Several filenames and the `casual_analysis/` directory retain historical spelling for compatibility with existing scripts.
 
 ## Citation
 
 If you find this work useful, please consider citing:
 
 ```bibtex
-@misc{yan2026beyond,
-  title  = {Beyond Text-Dominance: Understanding Modality Preference of Omni-Modal Large Language Models},
-  author = {Yan, Xinru and Cao, Boxi and Cao, Jialun and Lu, Yaojie and Lin, Hongyu and Zhou, Weixiang and Sun, Le and Han, Xianpei},
-  year   = {2026}
+@article{yan2026beyond,
+  title={Beyond Text-Dominance: Understanding Modality Preference of Omni-modal Large Language Models},
+  author={Yan, Xinru and Cao, Boxi and Lu, Yaojie and Lin, Hongyu and Zhou, Weixiang and Sun, Le and Han, Xianpei},
+  journal={arXiv preprint arXiv:2604.16902},
+  year={2026}
 }
 ```
-
-## Acknowledgements
-
-This project builds on the open-source model and benchmark ecosystems around Qwen2.5-Omni, Qwen3-Omni, MiniCPM-o, OmniVinci, Ming-Lite-Omni, XModBench, CMM, AVHBench, and OmniBench. We thank their authors for making their models, data, and evaluation protocols available to the community.
