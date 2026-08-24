@@ -184,7 +184,7 @@ python test_probe_layer_acc.py \
 ```
 
 ## Hallucination Correlation and Detection
-
+```bash
 python correlation/qwen2.5-omni-cmm-text-driven_response_hiddenstates.py \
   --data_file /path/to/cmm-language-driven.json \
   --model_path /path/to/Qwen2.5-Omni-7B \
