@@ -23,7 +23,6 @@ This repository supports four connected experiments:
 ## Contents
 
 - [Installation](#installation)
-- [Data Preparation](#data-preparation)
 - [Quick Start](#quick-start)
 - [Layer-wise Preference Probing](#layer-wise-preference-probing)
 - [Hallucination Correlation and Detection](#hallucination-correlation-and-detection)
@@ -53,37 +52,6 @@ pip install flash-attn --no-build-isolation
 ```
 
 MiniCPM-o, OmniVinci, Ming-Lite-Omni, and Qwen3-Omni may require additional dependencies or specific `transformers` revisions from their official repositories. Install the requirements of the model adapter you plan to run.
-
-## Data Preparation
-
-### Trimodal Conflict Data
-
-The constructor expects an aligned XModBench-style JSON array. Each record must contain:
-
-```json
-{
-  "id": "sample-id",
-  "text": "canonical semantic label",
-  "image": "/absolute/or/readable/path/to/image.jpg",
-  "audio": "/absolute/or/readable/path/to/audio.wav"
-}
-```
-
-It also requires:
-
-- `evaluation_preference/category.txt`: the six semantic categories included in this repository.
-
-### Hallucination Benchmarks
-
-Download CMM, AVHBench, and OmniBench from their official sources. Ensure every media path in the task JSON files resolves in your environment. The distractor modality for each task is:
-
-| Task | Distractor modality |
-| --- | --- |
-| CMM Language Dominance | Text |
-| CMM Visual Dominance | Vision |
-| CMM Audio Dominance | Audio |
-| AVHBench Video-driven Audio Hallucination | Vision |
-| AVHBench Audio-driven Video Hallucination | Audio |
 
 ## Repository Structure
 
