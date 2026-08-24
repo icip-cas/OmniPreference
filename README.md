@@ -1,6 +1,6 @@
 # Beyond Text-Dominance: Understanding Modality Preference of Omni-Modal Large Language Models
 
-The paper studies **modality preference** in native omni-modal large language models (OLLMs): when text, vision, and audio provide conflicting evidence, which modality determines the model's answer? This artifact contains code for constructing a trimodal conflict benchmark, measuring modality selection rates, probing preference formation across decoder layers, analyzing its relationship with cross-modal hallucination, and causally steering modality-preference directions.
+The paper studies **modality preference** in native omni-modal large language models: when text, vision, and audio provide conflicting evidence, which modality determines the model's answer? This artifact contains code for constructing a trimodal conflict benchmark, measuring modality selection rates, probing preference formation across decoder layers, analyzing its relationship with cross-modal hallucination, and causally steering modality-preference directions.
 
 <p align="center">
   <img src="assets/overview.png" alt="Overview of our analytical framework" width="100%">
@@ -57,16 +57,9 @@ The paper studies **modality preference** in native omni-modal large language mo
     README.md
 ```
 
-The repository contains source code and paper figures. Model checkpoints, XModBench/CMM/AVHBench/OmniBench media, generated conflict sets, hidden-state tensors, and trained probe checkpoints are not included.
-
 ## Prerequisites
 
 - Python 3.10 or newer
-- NVIDIA GPU with a CUDA-compatible PyTorch installation
-- Sufficient GPU memory for the selected OLLM; the paper's evaluations used an NVIDIA A100 80GB GPU
-- Local checkpoints or accessible Hugging Face model IDs for the open-source models
-- Local copies of the benchmark data and media used by each experiment
-- An OpenRouter API key only when reproducing the closed-source Gemini evaluations
 
 Create an environment and install the common dependencies:
 
@@ -129,9 +122,6 @@ The layer-wise preference-probe training pipeline:
 
 ![Layer-wise probe training](assets/probe_train_pipeline.png)
 
-## Reproduce
-
-Run commands from the repository root unless a step explicitly changes directories.
 
 ### 1. Prepare the external data
 
